@@ -116,7 +116,7 @@
 		1E472D732EFB06A300BA7707 /* FakeIrisXEGuC_firmware.c in Sources */ = {isa = PBXBuildFile; fileRef = 1E472D062EFB06A300BA7707 /* FakeIrisXEGuC_firmware.c */; };
 		1E472D742EFB06A300BA7707 /* AppleIntelTGLEGLFramebuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E472D072EFB06A300BA7707 /* AppleIntelTGLEGLFramebuffer.h */; };
 		1E472D762EFB06A300BA7707 /* IntelPort.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E472D092EFB06A300BA7707 /* IntelPort.h */; };
-		1E77E50D2EFD947A00C695BF /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1E77E5002EFD947A00C695BF /* Info.plist */; };
+
 		1E77E50E2EFD947A00C695BF /* AppleIntelTGLIOAccelerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1E77E5012EFD947A00C695BF /* AppleIntelTGLIOAccelerator.cpp */; };
 		1E77E5112EFD947A00C695BF /* linux_mm.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E77E5042EFD947A00C695BF /* linux_mm.h */; };
 		1E77E5122EFD947A00C695BF /* linux_sync.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E77E5052EFD947A00C695BF /* linux_sync.h */; };
@@ -565,7 +565,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1E77E50D2EFD947A00C695BF /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
