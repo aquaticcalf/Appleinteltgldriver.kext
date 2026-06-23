@@ -1,5 +1,5 @@
 /*
- * IntelIOSurfaceManager.h - IOSurface Integration for WindowServer
+ * AppleIntelTGLIOSurfaceManager.h - IOSurface Integration for WindowServer
  *
  * Complete IOSurface integration for macOS WindowServer compositing.
  * Provides IOSurface creation, management, and GPU memory backing.

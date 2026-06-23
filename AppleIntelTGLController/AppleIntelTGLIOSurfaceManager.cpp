@@ -1,4 +1,4 @@
-#include "IntelIOSurfaceManager.h"
+#include "AppleIntelTGLIOSurfaceManager.h"
 #include "IntelGEM.h"
 #include "IntelGTT.h"
 #include <IOKit/IOLib.h>

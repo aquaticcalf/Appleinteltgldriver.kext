@@ -9,7 +9,7 @@
 #include "IntelMetalCommandBuffer.h"
 #include "IntelMetalCommandQueue.h"
 #include "IntelMetalCommandTranslator.h"
-#include "IntelIOAccelerator.h"
+#include "AppleIntelTGLIOAccelerator.h"
 #include <IOKit/IOLib.h>
 
 #define super OSObject

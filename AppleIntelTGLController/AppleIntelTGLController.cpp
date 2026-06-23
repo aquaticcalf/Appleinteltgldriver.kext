@@ -23,7 +23,7 @@
 #include "IntelGTInterrupts.h"  // NEW
 #include "IntelGuC.h"  // GuC firmware interface
 #include "IntelGuCSubmission.h"  // GuC command submission
-#include "IntelIOAccelerator.h"  // IOAccelerator service
+#include "AppleIntelTGLIOAccelerator.h"  // IOAccelerator service
 
 // External IOKit symbols
 extern const OSSymbol * gIONameKey;

@@ -8,8 +8,8 @@
  */
 #include <IOKit/graphics/IOAccelerator.h>
 
-#include "IntelIOAccelerator.h"
-#include "IntelIOAcceleratorClients.h"  // Multi-client architecture
+#include "AppleIntelTGLIOAccelerator.h"
+#include "AppleIntelTGLIOAcceleratorClients.h"  // Multi-client architecture
 #include "AppleIntelTGLController.h"
 #include "IntelContext.h"
 #include "IntelRequest.h"
@@ -20,7 +20,7 @@
 #include "IntelGTT.h"
 #include "IntelGuC.h"
 #include "IntelGuCSubmission.h"
-#include "IntelIOSurfaceManager.h"
+#include "AppleIntelTGLIOSurfaceManager.h"
 #include <IOKit/IOLib.h>
 
 

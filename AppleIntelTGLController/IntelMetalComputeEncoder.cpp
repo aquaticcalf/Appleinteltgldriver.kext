@@ -10,7 +10,7 @@
 #include "IntelMetalBuffer.h"
 #include "IntelMetalTexture.h"
 #include "IntelMetalSamplerState.h"
-#include "IntelIOAccelerator.h"
+#include "AppleIntelTGLIOAccelerator.h"
 #include <IOKit/IOLib.h>
 
 #define super OSObject

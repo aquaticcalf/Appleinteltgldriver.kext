@@ -1,5 +1,5 @@
 /*
- * IntelIOAcceleratorClients.h - EXACT Apple Client Architecture
+ * AppleIntelTGLIOAcceleratorClients.h - EXACT Apple Client Architecture
  *
  * This implements the REAL Apple IOAcceleratorFamily2 architecture
  * based on reverse engineering of Apple's actual code.

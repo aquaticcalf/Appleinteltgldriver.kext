@@ -8,7 +8,7 @@
 
 #include "IntelMetalCommandQueue.h"
 #include "IntelMetalCommandBuffer.h"
-#include "IntelIOAccelerator.h"
+#include "AppleIntelTGLIOAccelerator.h"
 #include "IntelGuCSubmission.h"
 #include <IOKit/IOLib.h>
 #include <IOKit/IOTimerEventSource.h>

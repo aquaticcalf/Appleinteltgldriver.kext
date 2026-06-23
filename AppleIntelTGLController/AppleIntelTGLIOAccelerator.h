@@ -1,5 +1,5 @@
 /*
- * IntelIOAccelerator.h - IOAccelerator Service Interface
+ * AppleIntelTGLIOAccelerator.h - IOAccelerator Service Interface
  * Week 41: IOAccelerator Base
  *
  * IOAccelerator is the bridge between userspace Metal applications and the kernel driver.

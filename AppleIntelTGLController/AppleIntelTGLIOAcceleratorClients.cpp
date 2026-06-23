@@ -7,8 +7,8 @@
 * Each client type has its own class with exact selector tables matching Apple.
 */
 
-#include "IntelIOAcceleratorClients.h"
-#include "IntelIOAccelerator.h"
+#include "AppleIntelTGLIOAcceleratorClients.h"
+#include "AppleIntelTGLIOAccelerator.h"
 #include "AppleIntelTGLController.h"
 #include "IntelContext.h"
 #include "IntelGEMObject.h"
@@ -18,7 +18,7 @@
 #include "IntelGuCSubmission.h"
 #include "IntelGTT.h"
 #include "IntelIOFramebuffer.h"
-#include "IntelIOSurfaceManager.h"
+#include "AppleIntelTGLIOSurfaceManager.h"
 #include "IntelBlitter.h"
 #include "IntelRingBuffer.h"
 #include <IOKit/IOMemoryDescriptor.h>

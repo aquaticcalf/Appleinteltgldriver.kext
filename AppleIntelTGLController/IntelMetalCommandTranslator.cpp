@@ -7,7 +7,7 @@
 
 #include "IntelMetalCommandTranslator.h"
 #include "IntelMetalCommandBuffer.h"
-#include "IntelIOAccelerator.h"
+#include "AppleIntelTGLIOAccelerator.h"
 #include "IntelGuCSubmission.h"
 #include <IOKit/IOLib.h>
 
