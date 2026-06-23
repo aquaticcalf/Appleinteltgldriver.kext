@@ -629,7 +629,7 @@ IOReturn AppleIntelTGLController::setPowerState(unsigned long powerStateOrdinal,
 }
 
 
- * Hardware Detection and Setup
+// Hardware Detection and Setup
 
 // Safe MMIO wrappers (uses Controller's mmioMap)
 inline uint32_t safeControllerRead(IOMemoryMap* mmioMap, uint32_t offset) {
@@ -1228,7 +1228,7 @@ bool AppleIntelTGLController::initializeHardware()
 }
 
 
- * Cleanup/ 5. Setup interrupts
+// Cleanup/ 5. Setup interrupts
 
 void AppleIntelTGLController::cleanupHardware()
 {
@@ -1322,7 +1322,7 @@ void AppleIntelTGLController::cleanupResources()
 }
 
 
- * Register Access Helpers
+// Register Access Helpers
 
 u32 AppleIntelTGLController::readRegister32(u32 offset) const {
     return uncore ? uncore->readRegister32(offset) : 0;

@@ -142,7 +142,7 @@ void IntelPPGTT::cleanup()
 }
 
 
- * Page Table Setup
+// Page Table Setup
 
 bool IntelPPGTT::allocatePageTables()
 {
@@ -211,7 +211,7 @@ bool IntelPPGTT::initializeRoot()
 }
 
 
- * PTE Management
+// PTE Management
 
 // Gen12 PTE Bitfield Definitions  
 #define GEN12_PTE_PRESENT                (1ULL << 0)  // Bit 0: Valid/Present flag  
@@ -264,7 +264,7 @@ u64 IntelPPGTT::readPTE(u64 address)
 }
 
 
- * PPGTT Operations
+// PPGTT Operations
 
 bool IntelPPGTT::insertEntries(u64 start, IOMemoryDescriptor *mem, u32 flags)
 {
@@ -359,7 +359,7 @@ bool IntelPPGTT::unbindObject(IntelGEMObject *obj)
 }
 
 
- * Address Space Allocation
+// Address Space Allocation
 
 size_t IntelPPGTT::findFreeSpace(size_t numPages, size_t alignmentPages)
 {
@@ -485,7 +485,7 @@ bool IntelPPGTT::freeSpace(u64 address, size_t size)
 }
 
 
- * Query and Statistics
+// Query and Statistics
 
 size_t IntelPPGTT::getUsedSize() const
 {

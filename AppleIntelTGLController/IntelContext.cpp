@@ -127,7 +127,7 @@ u32 IntelContext::generateContextId()
 }
 
 
- * Context State Management
+// Context State Management
 
 bool IntelContext::allocateContextState()
 {
@@ -275,7 +275,7 @@ bool IntelContext::restoreState()
 }
 
 
- * PPGTT Management
+// PPGTT Management
 
 bool IntelContext::createPPGTT()
 {
@@ -299,7 +299,7 @@ bool IntelContext::createPPGTT()
 }
 
 
- * Ring Binding
+// Ring Binding
 
 bool IntelContext::bindRing(IntelRingBuffer *ring)
 {
@@ -331,7 +331,7 @@ bool IntelContext::unbindRing()
 }
 
 
- * Context Control
+// Context Control
 
 bool IntelContext::activate()
 {
@@ -410,7 +410,7 @@ bool IntelContext::reset()
 }
 
 
- * Query
+// Query
 
 u64 IntelContext::getContextAddress() const
 {
@@ -418,7 +418,7 @@ u64 IntelContext::getContextAddress() const
 }
 
 
- * Statistics
+// Statistics
 
 void IntelContext::getStats(struct context_stats *out)
 {
