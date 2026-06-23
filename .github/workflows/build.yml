@@ -27,6 +27,19 @@ jobs:
           -project AppleIntelTGLController.xcodeproj \
           -scheme AppleIntelTGLController \
           -configuration Release \
+          SYMROOT=build \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
           CODE_SIGNING_ALLOWED=NO
+
+    - name: Package Kext
+      run: |
+        cd build/Release
+        zip -r AppleIntelTGLController.kext.zip AppleIntelTGLController.kext
+
+    - name: Upload Kext Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AppleIntelTGLController-Release
+        path: build/Release/AppleIntelTGLController.kext.zip
+        retention-days: 90
