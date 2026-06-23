@@ -10,7 +10,7 @@
 #include <IOKit/IOLib.h>
 
 
- * Initialization
+// Initialization
 
 bool IntelUncore::init(AppleIntelTGLController *ctrl, void *base, size_t size)
 {
@@ -112,7 +112,7 @@ void IntelUncore::cleanup()
 }
 
 
- * Low-level MMIO Access (inline for performance)
+// Low-level MMIO Access (inline for performance)
 
 inline u8 IntelUncore::rawRead8(u32 offset)
 {
@@ -163,7 +163,7 @@ inline void IntelUncore::rawWrite64(u32 offset, u64 value)
 }
 
 
- * Public Register Access
+// Public Register Access
 
 u8 IntelUncore::readRegister8(u32 offset)
 {
@@ -240,7 +240,7 @@ void IntelUncore::postingRead32(u32 offset)
 }
 
 
- * Register Access with Forcewake
+// Register Access with Forcewake
 
 u32 IntelUncore::readRegister32_fw(u32 offset)
 {
@@ -277,7 +277,7 @@ void IntelUncore::writeRegister32_fw(u32 offset, u32 value)
 }
 
 
- * Forcewake Operations
+// Forcewake Operations
 
 void IntelUncore::forcewakeGet(enum forcewake_domains domains)
 {
@@ -365,7 +365,7 @@ bool IntelUncore::forcewakeWaitAck(enum forcewake_domain_id domain_id, u32 timeo
 }
 
 
- * Forcewake Helpers
+// Forcewake Helpers
 
 void IntelUncore::forcewakeSetDomain(enum forcewake_domain_id domain_id)
 {
@@ -415,7 +415,7 @@ bool IntelUncore::checkForcewakeAck(enum forcewake_domain_id domain_id)
 }
 
 
- * Forcewake Configuration
+// Forcewake Configuration
 
 void IntelUncore::detectForcewakeConfig()
 {
@@ -508,7 +508,7 @@ bool IntelUncore::isGen12() const
 }
 
 
- * Debug / Error Checking
+// Debug / Error Checking
 
 bool IntelUncore::checkForUnclaimedMMIO(u32 offset)
 {
