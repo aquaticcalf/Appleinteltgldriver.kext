@@ -541,7 +541,7 @@ bool IntelGTT::unbindObject(IntelGEMObject *obj)
 // IOSurface Scanout Support - System Physical -> GTT Offset
 
 
- * bindSurfacePages / unbindSurfacePages - NO LOCKING
+// bindSurfacePages / unbindSurfacePages - NO LOCKING
 
 
 
@@ -758,7 +758,7 @@ size_t IntelGTT::findFreeSpace(size_t numPages, size_t alignmentPages)
 
 
 // Bitmap operations - NO LOCKING
- * bindSurfacePages is single-threaded from WindowServer
+// bindSurfacePages is single-threaded from WindowServer
 
 void IntelGTT::markSpaceUsed(size_t startPage, size_t numPages)
 {
@@ -849,7 +849,7 @@ void IntelGTT::markSpaceFree(size_t startPage, size_t numPages)
 }
 
 
- * allocateSpace / freeSpace - NO LOCKING
+// allocateSpace / freeSpace - NO LOCKING
 u64 IntelGTT::allocateSpace(size_t size, size_t alignment)
 {
     if (size == 0 || size > usableSize) {
