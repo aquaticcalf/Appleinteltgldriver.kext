@@ -74,7 +74,7 @@ If you are running a Hackintosh and do not want to install the driver directly i
 6. Add the kext to your `Kernel -> Add` list. Ensure `ExecutablePath` is set to `Contents/MacOS/AppleIntelTGLController` and `PlistPath` is set to `Contents/Info.plist`.
 7. Save the `config.plist` and reboot your machine.
 
-*Note: Depending on your specific Tiger Lake laptop, you may also need to configure `DeviceProperties` in OpenCore to inject the correct `ig-platform-id` or spoof the `device-id` if it is not natively matched.*
+*Note: For 11th Gen Intel Core i5-1135G7 (Tiger Lake / Xe-LP) laptops, you must configure `DeviceProperties` in OpenCore to inject the correct `ig-platform-id` or spoof the `device-id` under `PciRoot(0x0)/Pci(0x2,0x0)`. Set `AAPL,ig-platform-id` to `<0100499a>` (or the corresponding Gen12 value) so the system targets the internal display pipeline.*
 
 ## Testing & Validation
 
