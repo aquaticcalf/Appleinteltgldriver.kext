@@ -301,7 +301,7 @@ void IntelRingBuffer::writeRegister(u32 reg, u32 value)
 }
 
 
- * Ring State Management
+// Ring State Management
 
 void IntelRingBuffer::updateHead()
 {
@@ -339,7 +339,7 @@ size_t IntelRingBuffer::calculateSpace(u32 head, u32 tail) const
 }
 
 
- * Command Submission
+// Command Submission
 
 bool IntelRingBuffer::begin(size_t numDwords)
 {
@@ -446,7 +446,7 @@ bool IntelRingBuffer::submitCommand(const u32 *commands, size_t numDwords, Intel
 }
 
 
- * Space Management
+// Space Management
 
 size_t IntelRingBuffer::getAvailableSpace() const
 {
@@ -621,7 +621,7 @@ void IntelRingBuffer::flush()
 }
 
 
- * Control
+// Control
 
 bool IntelRingBuffer::start()
 {
@@ -674,7 +674,7 @@ bool IntelRingBuffer::reset()
 }
 
 
- * Query
+// Query
 
 u32 IntelRingBuffer::getHead() const
 {
@@ -723,7 +723,7 @@ bool IntelRingBuffer::waitForIdleEngine(u32 timeoutMs)
 }
 
 
- * Statistics
+// Statistics
 
 void IntelRingBuffer::getStats(struct ring_stats *out)
 {
@@ -749,7 +749,7 @@ void IntelRingBuffer::printStats()
 }
 
 
- * Helper Functions
+// Helper Functions
 
 const char* IntelRingBuffer::getEngineName(enum intel_engine_id id)
 {
