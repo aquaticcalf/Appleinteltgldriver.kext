@@ -16,7 +16,7 @@
 #include <IOKit/graphics/IODisplay.h>
 
 // Our framebuffer header (defines the class)
-#include "IntelIOFramebuffer.h"
+#include "AppleIntelTGLEGLFramebuffer.h"
 #include "AppleIntelTGLController.h"  // For controller access
 #include "IntelGTT.h"  // For GTT binding in setScanoutSurface
 

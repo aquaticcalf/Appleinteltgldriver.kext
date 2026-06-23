@@ -17,7 +17,7 @@
 #include "IntelFence.h"
 #include "IntelGuCSubmission.h"
 #include "IntelGTT.h"
-#include "IntelIOFramebuffer.h"
+#include "AppleIntelTGLEGLFramebuffer.h"
 #include "AppleIntelTGLIOSurfaceManager.h"
 #include "IntelBlitter.h"
 #include "IntelRingBuffer.h"
