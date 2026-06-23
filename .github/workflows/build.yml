@@ -30,7 +30,8 @@ jobs:
           SYMROOT=build \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_ALLOWED=NO \
+          WARNING_CFLAGS="-Wno-deprecated-declarations -Wno-macro-redefined -Wno-shorten-64-to-32"
 
     - name: Package Kext
       run: |
