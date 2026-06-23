@@ -62,6 +62,20 @@ AppleIntelTGLController/
    ```
 6. Reboot your machine.
 
+## Hackintosh / OpenCore Installation
+
+If you are running a Hackintosh and do not want to install the driver directly into the macOS system volume, you can inject it via the OpenCore bootloader:
+
+1. Download the pre-compiled `AppleIntelTGLController.kext.zip` from the **Actions -> Artifacts** tab (or Releases page).
+2. Extract the ZIP file.
+3. Mount your EFI partition.
+4. Copy the `AppleIntelTGLController.kext` folder into your `EFI/OC/Kexts/` directory.
+5. Open your `EFI/OC/config.plist` using a plist editor (like ProperTree).
+6. Add the kext to your `Kernel -> Add` list. Ensure `ExecutablePath` is set to `Contents/MacOS/AppleIntelTGLController` and `PlistPath` is set to `Contents/Info.plist`.
+7. Save the `config.plist` and reboot your machine.
+
+*Note: Depending on your specific Tiger Lake laptop, you may also need to configure `DeviceProperties` in OpenCore to inject the correct `ig-platform-id` or spoof the `device-id` if it is not natively matched.*
+
 ## Testing & Validation
 
 Once the system has booted, you can test the driver implementation:
