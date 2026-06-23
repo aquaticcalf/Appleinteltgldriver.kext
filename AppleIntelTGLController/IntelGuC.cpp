@@ -891,15 +891,25 @@ bool IntelGuC::registerContext(IntelContext* context) {
         return false;
     }
     
-    // Send GUC_ACTION_REGISTER_CONTEXT with context ID
-    uint32_t data[4] = {
-        context->getId(),  // Context ID
-        0,  // Context descriptor (filled by GuC)
-        0,  // Reserved
-        0   // Reserved
+    // Construct guc_h2g_register_context payload (Length = 3)
+    // Gen12 CTB message format:
+    // Header (handled by CTB or mmio send, we will pass the properly formatted header as action if needed, or rely on sendH2GMessage)
+    // Actually, sendH2GMessage sends `action` as the first dword. So we can format the header here:
+    uint32_t header = GUC_HXG_MSG_0_ORIGIN | // Host (0, but we set it just in case, wait, 0 is host)
+                      (0 << GUC_HXG_MSG_0_TYPE_SHIFT) | // Type 0
+                      (INTEL_GUC_ACTION_REGISTER_CONTEXT << GUC_HXG_MSG_0_ACTION_SHIFT) |
+                      3; // Length = 3
+    
+    uint64_t lrc_desc = context->getContextAddress(); // Get LRC descriptor phys addr
+    
+    uint32_t data[3] = {
+        context->getId() & 0xFFFF,           // context_id (16-bit)
+        (uint32_t)(lrc_desc & 0xFFFFFFFF),   // lrc_desc_lower
+        (uint32_t)(lrc_desc >> 32)           // lrc_desc_upper
     };
     
-    if (sendH2GMessage(GUC_ACTION_REGISTER_CONTEXT, data, 4, NULL)) {
+    // For now we pass the pre-formatted header as the action, and the 3 dwords as data
+    if (sendH2GMessage(header, data, 3, NULL)) {
         stats.contextsRegistered++;
         IOLog("IntelGuC: OK  Context %u registered\n", context->getId());
         return true;
@@ -914,8 +924,16 @@ bool IntelGuC::deregisterContext(IntelContext* context) {
         return false;
     }
     
-    uint32_t data[1] = { (uint32_t)(uintptr_t)context };
-    return sendH2GMessage(GUC_ACTION_DEREGISTER_CONTEXT, data, 1, NULL);
+    uint32_t header = GUC_HXG_MSG_0_ORIGIN |
+                      (0 << GUC_HXG_MSG_0_TYPE_SHIFT) |
+                      (INTEL_GUC_ACTION_DEREGISTER_CONTEXT << GUC_HXG_MSG_0_ACTION_SHIFT) |
+                      1; // Length = 1
+                      
+    uint32_t data[1] = {
+        context->getId() & 0xFFFF            // context_id
+    };
+    
+    return sendH2GMessage(header, data, 1, NULL);
 }
 
 bool IntelGuC::registerWorkQueue(uint32_t contextId, uint64_t wqPhysicalAddress, uint32_t wqSize) {

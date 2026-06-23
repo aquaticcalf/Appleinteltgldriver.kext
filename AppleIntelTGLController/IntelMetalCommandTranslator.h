@@ -23,8 +23,8 @@ class IntelGuCSubmission;
 // Intel GPU command opcodes (simplified subset)
 #define INTEL_CMD_MI_NOOP                0x00000000
 #define INTEL_CMD_MI_BATCH_BUFFER_END    0x0A000000
-#define INTEL_CMD_MI_FLUSH               0x04000000
-#define INTEL_CMD_MI_STORE_DATA_IMM      0x20000000
+#define INTEL_CMD_MI_BATCH_BUFFER_START  0x31000000
+#define INTEL_CMD_PIPE_CONTROL           ((3 << 29) | (3 << 27) | (2 << 24))
 #define INTEL_CMD_PIPELINE_SELECT        0x69040000
 #define INTEL_CMD_STATE_BASE_ADDRESS     0x61010000
 #define INTEL_CMD_3DSTATE_PIPELINED_POINTERS 0x78000000
@@ -35,8 +35,10 @@ class IntelGuCSubmission;
 #define INTEL_CMD_3DSTATE_PS             0x78200000
 #define INTEL_CMD_3DSTATE_VIEWPORT       0x780D0000
 #define INTEL_CMD_3DSTATE_SCISSOR        0x780F0000
+#define INTEL_CMD_3DSTATE_VERTEX_BUFFERS 0x78080000
+#define INTEL_CMD_3DSTATE_VF_INSTANCING  0x78010000
 #define INTEL_CMD_3DPRIMITIVE            0x7B000000
-#define INTEL_CMD_GPGPU_WALKER           0x73050000
+#define INTEL_CMD_COMPUTE_WALKER         0x79A00000
 #define INTEL_CMD_MEDIA_VFE_STATE        0x71000000
 #define INTEL_CMD_MEDIA_INTERFACE_DESCRIPTOR_LOAD 0x71020000
 #define INTEL_CMD_XY_SRC_COPY_BLT        0x53000000
@@ -141,7 +143,8 @@ public:
     // Compute commands
     IOReturn generateMediaVFEState();
     IOReturn generateMediaInterfaceDescriptorLoad();
-    IOReturn generateGPGPUWalker(uint32_t groupsX, uint32_t groupsY, uint32_t groupsZ);
+    IOReturn generateComputeWalker(uint32_t groupsX, uint32_t groupsY, uint32_t groupsZ);
+    IOReturn generatePipeControl(uint64_t fence_addr, uint64_t fence_seq);
     
     // Blit commands
     IOReturn generateXYSrcCopyBlt(uint64_t src, uint64_t dst, uint32_t size);

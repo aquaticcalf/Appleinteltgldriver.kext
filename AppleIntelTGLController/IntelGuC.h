@@ -52,8 +52,8 @@ class IntelRequest;
 #define GUC_CTB_SIZE             0x1C8
 
 // Doorbell registers
-#define GUC_DOORBELL_BASE        0x140000
-#define GUC_DOORBELL_OFFSET(id)  (GUC_DOORBELL_BASE + (id) * 4)
+#define GUC_DOORBELL_BASE        0x10700
+#define GUC_DOORBELL_OFFSET(id)  (GUC_DOORBELL_BASE + (id) * 64)
 
 // H2G Actions for command submission
 #define GUC_ACTION_REGISTER_WORKQUEUE     0x4501
@@ -133,6 +133,19 @@ enum GuCG2HMessageType {
 #define GUC_CTB_MSG_FLAGS(hdr)      (((hdr) >> 8) & 0xFF)
 #define GUC_CTB_MSG_LEN(hdr)        (((hdr) >> 16) & 0xFFFF)
 #define GUC_CTB_MSG_MAKE_HDR(type, len) (((len) << 16) | (type))
+
+// CTB Message Header Layout (Gen12 H2G)
+#define GUC_HXG_MSG_0_ORIGIN                 (1U << 31) // 0 = Host, 1 = GuC
+#define GUC_HXG_MSG_0_TYPE_SHIFT             28
+#define GUC_HXG_MSG_0_TYPE_MASK              (0x7U << 28)
+#define GUC_HXG_MSG_0_ACTION_SHIFT           16
+#define GUC_HXG_MSG_0_ACTION_MASK            (0xFFFU << 16)
+#define GUC_HXG_MSG_0_LEN_SHIFT              0
+#define GUC_HXG_MSG_0_LEN_MASK               0x7FFU
+
+// H2G Action Codes
+#define INTEL_GUC_ACTION_REGISTER_CONTEXT    0x1000
+#define INTEL_GUC_ACTION_DEREGISTER_CONTEXT  0x1001
 
 // CTB buffer descriptor (shared with GuC firmware)
 struct GuCCTBDesc {

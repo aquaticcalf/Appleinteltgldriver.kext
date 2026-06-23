@@ -5436,9 +5436,17 @@ IOReturn IntelGLDrawableClient::s_create_drawable(OSObject* target, void* ref, I
  
  IOLog("[TGL][GLDrawableClient] create_drawable (selector 0)\n");
  
- // TODO: Implement drawable creation
- // For now, return a mock drawable ID
  uint32_t drawableID = me->nextDrawableID++;
+ 
+ OSNumber* drawable = OSNumber::withNumber(drawableID, 32);
+ if (drawable) {
+     IOLockLock(me->drawablesLock);
+     me->drawableSurfaces->setObject(drawable);
+     IOLockUnlock(me->drawablesLock);
+     drawable->release();
+ } else {
+     return kIOReturnNoMemory;
+ }
  
  if (args->scalarOutputCount > 0) {
      args->scalarOutput[0] = drawableID;
@@ -5454,9 +5462,19 @@ IOReturn IntelGLDrawableClient::s_destroy_drawable(OSObject* target, void* ref, 
  
  IOLog("[TGL][GLDrawableClient] destroy_drawable (selector 1)\n");
  
+ if (args->scalarInputCount < 1) return kIOReturnBadArgument;
  uint32_t drawableID = (uint32_t)args->scalarInput[0];
  
- // TODO: Actually remove from drawable list
+ IOLockLock(me->drawablesLock);
+ for (unsigned int i = 0; i < me->drawableSurfaces->getCount(); i++) {
+     OSNumber* num = OSDynamicCast(OSNumber, me->drawableSurfaces->getObject(i));
+     if (num && num->unsigned32BitValue() == drawableID) {
+         me->drawableSurfaces->removeObject(i);
+         break;
+     }
+ }
+ IOLockUnlock(me->drawablesLock);
+ 
  if (args->scalarOutputCount > 0) {
      args->scalarOutput[0] = kIOReturnSuccess;
  }
@@ -5471,12 +5489,27 @@ IOReturn IntelGLDrawableClient::s_bind_drawable(OSObject* target, void* ref, IOE
  
  IOLog("[TGL][GLDrawableClient] bind_drawable (selector 2)\n");
  
- // TODO: Bind drawable to GL context
+ if (args->scalarInputCount < 1) return kIOReturnBadArgument;
+ uint32_t drawableID = (uint32_t)args->scalarInput[0];
+ 
+ bool found = false;
+ IOLockLock(me->drawablesLock);
+ for (unsigned int i = 0; i < me->drawableSurfaces->getCount(); i++) {
+     OSNumber* num = OSDynamicCast(OSNumber, me->drawableSurfaces->getObject(i));
+     if (num && num->unsigned32BitValue() == drawableID) {
+         found = true;
+         break;
+     }
+ }
+ IOLockUnlock(me->drawablesLock);
+ 
+ if (!found) return kIOReturnNotFound;
+ 
  if (args->scalarOutputCount > 0) {
      args->scalarOutput[0] = kIOReturnSuccess;
  }
  
- IOLog("[TGL][GLDrawableClient] OK  Drawable bound\n");
+ IOLog("[TGL][GLDrawableClient] OK  Drawable bound: ID=%u\n", drawableID);
  return kIOReturnSuccess;
 }
 
@@ -5486,12 +5519,27 @@ IOReturn IntelGLDrawableClient::s_update_drawable(OSObject* target, void* ref, I
  
  IOLog("[TGL][GLDrawableClient] update_drawable (selector 3)\n");
  
- // TODO: Update drawable properties
+ if (args->scalarInputCount < 1) return kIOReturnBadArgument;
+ uint32_t drawableID = (uint32_t)args->scalarInput[0];
+ 
+ bool found = false;
+ IOLockLock(me->drawablesLock);
+ for (unsigned int i = 0; i < me->drawableSurfaces->getCount(); i++) {
+     OSNumber* num = OSDynamicCast(OSNumber, me->drawableSurfaces->getObject(i));
+     if (num && num->unsigned32BitValue() == drawableID) {
+         found = true;
+         break;
+     }
+ }
+ IOLockUnlock(me->drawablesLock);
+ 
+ if (!found) return kIOReturnNotFound;
+ 
  if (args->scalarOutputCount > 0) {
      args->scalarOutput[0] = kIOReturnSuccess;
  }
  
- IOLog("[TGL][GLDrawableClient] OK  Drawable updated\n");
+ IOLog("[TGL][GLDrawableClient] OK  Drawable updated: ID=%u\n", drawableID);
  return kIOReturnSuccess;
 }
 

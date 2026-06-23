@@ -188,6 +188,22 @@ IOReturn IntelMetalCommandTranslator::translateCommandBuffer(IntelMetalCommandBu
     IOLog("IntelMetalCommandTranslator:   Commands/sec: %llu\n",
           translationTime > 0 ? (1000000 / translationTime) : 0);
     
+    // Submit to GuC
+    if (accelerator && submission && gpuCommandMemory && gpuCommandOffset > 0) {
+        IOLog("IntelMetalCommandTranslator: Submitting %u bytes to GuC\n", gpuCommandOffset);
+        
+        IntelContext* context = accelerator->getMetalContext();
+        if (context) {
+            uint64_t batchAddress = gpuCommandMemory->getPhysicalAddress();
+            IOReturn submitRet = submission->submitBatch(context, context->getRing(), batchAddress, gpuCommandOffset);
+            if (submitRet != kIOReturnSuccess) {
+                IOLog("IntelMetalCommandTranslator: ERROR - GuC submission failed: 0x%x\n", submitRet);
+            }
+        } else {
+            IOLog("IntelMetalCommandTranslator: ERROR - No Metal context available for submission\n");
+        }
+    }
+    
     // Clean up
     clearGPUCommandBuffer();
     currentStage = kTranslationStageNone;
@@ -390,8 +406,8 @@ IOReturn IntelMetalCommandTranslator::translateComputeCommands(void* metalComman
             generateMediaVFEState();
             generateMediaInterfaceDescriptorLoad();
             
-            // Generate GPGPU_WALKER for thread group dispatch
-            generateGPGPUWalker(dispatch->threadgroupsX, dispatch->threadgroupsY, dispatch->threadgroupsZ);
+            // Generate COMPUTE_WALKER for thread group dispatch
+            generateComputeWalker(dispatch->threadgroupsX, dispatch->threadgroupsY, dispatch->threadgroupsZ);
             break;
         }
         
@@ -491,19 +507,18 @@ IOReturn IntelMetalCommandTranslator::generateGPUCommands() {
             return ret;
         }
     }
+    // Issue PIPE_CONTROL to flush caches and synchronize as per Gen12 specs
+    generatePipeControl(0, 0);
     
-    // Generate command sequence
-    // In full implementation, would generate complete Intel GPU command stream
+    // Append MI_BATCH_BUFFER_END to close the command stream
+    appendGPUCommand(0x0A << 23); // MI_BATCH_BUFFER_END_OPCODE
     
-    // Example: Pipeline setup
-    generatePipelineSelect(0); // 3D pipeline
-    generateStateBaseAddress();
-    generateRenderState();
-    generateVertexFetch();
-    generateShaderDispatch();
-    generate3DPrimitive(kMetalPrimitiveTypeTriangle, 3);
+    // Pad to QWORD boundary with MI_NOOP
+    if ((gpuCommandOffset / 4) % 2 != 0) {
+        appendGPUCommand(0); 
+    }
     
-    IOLog("IntelMetalCommandTranslator:   OK  Generated %u bytes of GPU commands\n",
+    IOLog("IntelMetalCommandTranslator:   OK  Finalized %u bytes of GPU commands\n",
           gpuCommandOffset);
     
     return kIOReturnSuccess;
@@ -555,8 +570,9 @@ IOReturn IntelMetalCommandTranslator::optimizeGPUCommands() {
 
 
 IOReturn IntelMetalCommandTranslator::generatePipelineSelect(uint32_t pipeline) {
-    uint32_t cmd = INTEL_CMD_PIPELINE_SELECT | (pipeline & 0x3);
-    return appendGPUCommand(cmd);
+    uint32_t cmd = INTEL_CMD_PIPELINE_SELECT | (pipeline & 0x3); // Length 0 (total 1 dword)
+    appendGPUCommand(cmd);
+    return kIOReturnSuccess;
 }
 
 IOReturn IntelMetalCommandTranslator::generateStateBaseAddress() {
@@ -626,17 +642,29 @@ IOReturn IntelMetalCommandTranslator::generateVertexFetch() {
     // Generate 3DSTATE_VERTEX_BUFFERS for all bound vertex buffers
     for (uint32_t i = 0; i < kMaxVertexBuffers; i++) {
         if (state.currentVertexBuffers[i] != 0) {
-            // 3DSTATE_VERTEX_BUFFER_PACKED
-            uint32_t cmd = 0x76000000 | (4 - 2); // 4 dwords
-            appendGPUCommand(cmd | (i << 20)); // VB index
+            uint32_t cmd = INTEL_CMD_3DSTATE_VERTEX_BUFFERS | (5 - 2); // 5 dwords
+            appendGPUCommand(cmd);
+            
+            // VB index & MOCS
+            appendGPUCommand((i << 26) | (2 << 16) | (256 & 0xFFF)); // Pitch
             
             // Buffer base address
             uint64_t vbAddr = state.currentVertexBuffers[i];
             appendGPUCommand((uint32_t)(vbAddr & 0xFFFFFFFF));
             appendGPUCommand((uint32_t)(vbAddr >> 32));
             
-            // Buffer size, pitch, format
-            appendGPUCommand(0xFFFFF000 | (256 << 8)); // 4KB pitch, R32G32B32A32_FLOAT
+            // Buffer size
+            appendGPUCommand(0xFFFFF000); 
+        }
+    }
+    
+    // Generate 3DSTATE_VF_INSTANCING (per spec requirement)
+    for (uint32_t i = 0; i < kMaxVertexBuffers; i++) {
+        if (state.currentVertexBuffers[i] != 0) {
+            uint32_t cmd = (0x7801 << 16) | (3 - 2); // CMD_3DSTATE_VF_INSTANCING
+            appendGPUCommand(cmd);
+            appendGPUCommand(i); // Element index
+            appendGPUCommand(0); // Instancing step (0 = per vertex)
         }
     }
     
@@ -768,10 +796,10 @@ IOReturn IntelMetalCommandTranslator::generateMediaInterfaceDescriptorLoad() {
     return kIOReturnSuccess;
 }
 
-IOReturn IntelMetalCommandTranslator::generateGPGPUWalker(uint32_t groupsX,
+IOReturn IntelMetalCommandTranslator::generateComputeWalker(uint32_t groupsX,
                                                          uint32_t groupsY,
                                                          uint32_t groupsZ) {
-    uint32_t cmd = INTEL_CMD_GPGPU_WALKER | (15 - 2); // 15 dwords
+    uint32_t cmd = INTEL_CMD_COMPUTE_WALKER | (39 - 2); // 39 dwords
     appendGPUCommand(cmd);
     
     // Interface descriptor offset
@@ -813,6 +841,42 @@ IOReturn IntelMetalCommandTranslator::generateGPGPUWalker(uint32_t groupsX,
     
     // Thread group ID Z dimension
     appendGPUCommand(1);
+    
+    // Additional dwords for COMPUTE_WALKER on Gen12 (39 dwords total usually, but this depends on extended fields)
+    // The previous implementation used GPGPU_WALKER which is 15 dwords. COMPUTE_WALKER is larger.
+    // For now we pad out the remaining dwords based on the size in the header.
+    // Length is 39 - 2 = 37. We already appended 15 dwords. So pad 24 dwords.
+    for (int i = 15; i < 39; i++) {
+        appendGPUCommand(0);
+    }
+    
+    return kIOReturnSuccess;
+}
+
+IOReturn IntelMetalCommandTranslator::generatePipeControl(uint64_t fence_addr, uint64_t fence_seq) {
+    // PIPE_CONTROL opcode
+    uint32_t cmd = (3 << 29) | (3 << 27) | (2 << 24) | (6 - 2); // 6 dwords
+    appendGPUCommand(cmd);
+    
+    // Flags
+    uint32_t flags = (1 << 27) | // Render Target Cache Flush
+                     (1 << 26) | // Texture Cache Invalidate
+                     (1 << 20) | // CS Stall
+                     (1 << 14) | // Post-Sync Write Immediate
+                     (1 << 5);   // DC Flush Enable
+    appendGPUCommand(flags);
+    
+    // Address lower (PPGTT by default, bit 2 = 0)
+    appendGPUCommand((uint32_t)(fence_addr & 0xFFFFFFFF));
+    
+    // Address upper
+    appendGPUCommand((uint32_t)(fence_addr >> 32));
+    
+    // Immediate data lower
+    appendGPUCommand((uint32_t)(fence_seq & 0xFFFFFFFF));
+    
+    // Immediate data upper
+    appendGPUCommand((uint32_t)(fence_seq >> 32));
     
     return kIOReturnSuccess;
 }

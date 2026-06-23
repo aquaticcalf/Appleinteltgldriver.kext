@@ -687,8 +687,8 @@ bool IntelGuCSubmission::allocateDoorbell(GuCContextState* state) {
     }
     
     // Calculate doorbell MMIO offset for Gen12+
-    // Doorbell register: 0x140000 + (doorbellId * 4)
-    uint32_t doorbellOffset = GUC_DOORBELL_BASE + (doorbellId * 4);
+    // Doorbell register: 0x10700 + (doorbellId * 64)
+    uint32_t doorbellOffset = GUC_DOORBELL_OFFSET(doorbellId);
     
     // Setup doorbell info
     state->doorbell.doorbellId = doorbellId;
@@ -723,15 +723,19 @@ bool IntelGuCSubmission::ringDoorbell(GuCContextState* state) {
     // Get the context's assigned doorbell ID
     uint32_t doorbellId = state->doorbell.doorbellId;
     
-    // Ring doorbell by writing cookie
-    // Pass the context's assigned doorbell ID to GuC
-    uint32_t data[2] = {
-        doorbellId,
-        state->descriptor.workQueueTail
-    };
-    
-    // Notify GuC via doorbell with correct doorbell ID
-    guc->ringDoorbell(state->context, doorbellId);
+    // Ring doorbell by writing context ID directly to MMIO
+    void __iomem* mmioBase = controller->getMMIOBase();
+    if (mmioBase) {
+        // Each doorbell is a 64-byte aligned structure
+        // The first 32-bit integer is written to trigger the interrupt
+        volatile uint32_t* doorbell = (volatile uint32_t*)((uintptr_t)mmioBase + state->doorbell.physicalAddress);
+        
+        // Write the context ID to trigger the GuC wake-up
+        *doorbell = state->contextId;
+        
+        // Memory barrier to ensure the write reaches the PCIe root complex / internal fabric
+        __sync_synchronize();
+    }
     
     stats.doorbellRings++;
     
@@ -849,13 +853,29 @@ bool IntelGuCSubmission::submitBatch(IntelContext* context, uint64_t batchAddres
         return false;
     }
     
+    // Write MI_BATCH_BUFFER_START to the ring buffer
+    IntelRingBuffer* ring = context->getRing();
+    if (ring) {
+        // We need 4 dwords: 3 for MI_BATCH_BUFFER_START + 1 NOOP padding
+        if (ring->begin(4)) {
+            ring->emit((0x31 << 23) | (1 << 22) | (1 << 8) | (3 - 2)); 
+            ring->emit((uint32_t)(batchAddress & 0xFFFFFFFF));
+            ring->emit((uint32_t)(batchAddress >> 32));
+            ring->emit(0); // MI_NOOP
+            ring->advance();
+        } else {
+            IOLog("IntelGuCSubmission: ERROR - Failed to begin ring for batch\n");
+            return false;
+        }
+    }
+    
     // Build work item for batch
     GuCWorkItem item;
     memset(&item, 0, sizeof(item));
     
-    item.header = 0;  // Would contain work item type/flags
-    item.contextDescriptor = state->descriptor.contextId;
-    item.ringTail = batchLength;  // Simplified
+    item.header = WQ_STATUS_ACTIVE | WQ_TYPE_INORDER;
+    item.contextDescriptor = state->contextId;
+    item.ringTail = ring ? ring->getTail() : 0;
     item.fence = 0;  // Would contain fence ID
     
     return submitWorkItem(state, &item);
