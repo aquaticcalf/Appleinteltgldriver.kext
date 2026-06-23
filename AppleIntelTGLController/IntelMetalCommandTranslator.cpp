@@ -196,9 +196,9 @@ IOReturn IntelMetalCommandTranslator::translateCommandBuffer(IntelMetalCommandBu
         IntelContext* context = accelerator->getMetalContext();
         if (context) {
             uint64_t batchAddress = gpuCommandMemory->getPhysicalAddress();
-            IOReturn submitRet = submission->submitBatch(context, context->getRing(), batchAddress, gpuCommandOffset);
-            if (submitRet != kIOReturnSuccess) {
-                IOLog("IntelMetalCommandTranslator: ERROR - GuC submission failed: 0x%x\n", submitRet);
+            bool success = submission->submitBatch(context, batchAddress, gpuCommandOffset);
+            if (!success) {
+                IOLog("IntelMetalCommandTranslator: ERROR - GuC submission failed\n");
             }
         } else {
             IOLog("IntelMetalCommandTranslator: ERROR - No Metal context available for submission\n");
